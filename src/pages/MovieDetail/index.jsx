@@ -165,7 +165,7 @@ const MovieDetail = () => {
                                 <FaClock /> {formatTime(session.datetime)}
                               </div>
                               <div className="session-theater">
-                                <FaMapMarkerAlt /> {session.theater.name} - {session.theater.type}
+                                <FaMapMarkerAlt /> {session.theater?.name} - {session.theater?.type}
                               </div>
                               <div className="session-price">
                                 <FaTicketAlt /> Inteira: R$ {session.fullPrice.toFixed(2)} | Meia: R$ {session.halfPrice.toFixed(2)}

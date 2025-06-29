@@ -25,20 +25,16 @@ const SeatSelection = () => {
         console.log('Session detail response:', response);
 
         if (response.success && response.data) {
-          // Ensure session data has the required properties
           let sessionData = response.data;
           
-          // Check if movie exists
           if (!sessionData.movie) {
             throw new Error('Movie data is missing in session response');
           }
           
-          // Check if theater exists
           if (!sessionData.theater) {
             throw new Error('Theater data is missing in session response');
           }
-            // Ensure seats array exists
-          if (!Array.isArray(sessionData.seats)) {
+           if (!Array.isArray(sessionData.seats)) {
             sessionData.seats = [];
             console.warn('Session seats property is not an array, using empty array');
           } else {
@@ -54,13 +50,11 @@ const SeatSelection = () => {
         } else {
           error('Erro ao carregar detalhes da sessão.');
           console.error('Session data not found in response:', response);
-          // Navigate back to homepage if no valid data
           setTimeout(() => navigate('/'), 3000);
         }
       } catch (err) {
         error('Erro ao carregar informações. Tente novamente mais tarde.');
         console.error('Error fetching session details:', err);
-        // Navigate back to homepage on error
         setTimeout(() => navigate('/'), 3000);
       } finally {
         setLoading(false);
@@ -70,23 +64,19 @@ const SeatSelection = () => {
     fetchSession();
   }, [id, error, navigate]);
   const handleSeatSelection = (seat) => {
-    // Somente permite seleção se o assento estiver com status "available"
     if (seat.status !== 'available') {
       console.log(`Assento ${seat.row}-${seat.number} não disponível (status: ${seat.status})`);
       return;
     }
 
-    // Verifica se o assento já está selecionado
     const seatIndex = selectedSeats.findIndex(
       (selected) => selected.row === seat.row && selected.number === seat.number
     );
 
     if (seatIndex === -1) {
-      // Adiciona aos assentos selecionados
       console.log(`Adicionando assento ${seat.row}-${seat.number} à seleção`);
       setSelectedSeats([...selectedSeats, seat]);
     } else {
-      // Remove dos assentos selecionados
       console.log(`Removendo assento ${seat.row}-${seat.number} da seleção`);
       const newSelected = [...selectedSeats];
       newSelected.splice(seatIndex, 1);
@@ -94,16 +84,13 @@ const SeatSelection = () => {
     }
   };
   const getSeatStatus = (seat) => {
-    // Primeiro verifica se o assento está na lista de assentos selecionados pelo usuário
     const isSelected = selectedSeats.some(
       (selected) => selected.row === seat.row && selected.number === seat.number
     );
 
-    // Se estiver selecionado pelo usuário, mostra como "selected"
     if (isSelected) return 'selected';
     
-    // Caso contrário, mostra o status atual do assento na sessão (available, occupied, reserved)
-    return seat.status || 'available'; // Fallback para "available" caso o status seja indefinido
+    return seat.status || 'available'; 
   };
 
   const formatDate = (dateString) => {
@@ -119,38 +106,32 @@ const SeatSelection = () => {
   const calculateTotal = () => {
     if (!session) return 0;
     return selectedSeats.length * session.fullPrice;
-  };  // Function to reset seats by making an API call or using local demo
+  };  
   const handleResetSeats = async () => {
     try {
       setResetLoading(true);
       
-      // Limpar seleção de assentos imediatamente para evitar confusão visual
       setSelectedSeats([]);
       
       if (!user || user.role !== 'admin') {
-        // For non-admin users, just reset locally (demo purposes)
         const updatedSession = {
           ...session,
           seats: session.seats.map(seat => ({
             ...seat,
-            status: 'available' // Set all seats to available
+            status: 'available' 
           }))
         };
         
-        // Wait for a moment to simulate API call
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Atualiza o estado da sessão com os assentos resetados
         setSession(updatedSession);
         showAlert('Assentos atualizados localmente para demonstração!', 'success');
       } else {
-        // For admin users, make the actual API call
         console.log('Resetting seats via API for session:', id);
         try {
           const response = await sessionsService.resetSessionSeats(id);
           
           if (response.success) {
-            // Update the session with the response data
             setSession(response.data);
             showAlert('Todos os assentos foram resetados com sucesso!', 'success');
           } else {
@@ -159,13 +140,11 @@ const SeatSelection = () => {
         } catch (apiErr) {
           console.error('API error resetting seats:', apiErr);
           error('Erro ao resetar assentos via API. Verifique se você tem permissões de admin.');
-          throw apiErr; // Re-throw to be caught by the outer catch
+          throw apiErr; 
         }
       }
     } catch (err) {
-      // This catch block will only trigger for the admin flow now
       console.error('Error in reset seats function:', err);
-      // Error already shown for API errors
     } finally {
       setResetLoading(false);
     }
@@ -194,15 +173,13 @@ const SeatSelection = () => {
     );
   }
 
-  // Ensure seats is a valid array
   if (!Array.isArray(session.seats)) {
     session.seats = [];
     console.warn('Session seats property is not an array, using empty array');
   }
   
-  // Group seats by row
   const seatsByRow = session.seats.reduce((acc, seat) => {
-    if (!seat || !seat.row) return acc; // Skip invalid seats
+    if (!seat || !seat.row) return acc; 
     
     if (!acc[seat.row]) {
       acc[seat.row] = [];
@@ -244,7 +221,7 @@ const SeatSelection = () => {
           <div className="session-meta">
             <p><FaCalendarAlt /> {formatDate(session.datetime)}</p>
             <p><FaClock /> {formatTime(session.datetime)}</p>
-            <p><FaMapMarkerAlt /> {session.theater.name} - {session.theater.type}</p>
+            <p><FaMapMarkerAlt /> {session.theater?.name} - {session.theater?.type}</p>
             <p><FaTicketAlt /> R$ {session.fullPrice.toFixed(2)}</p>
           </div>
         </div>
@@ -279,7 +256,7 @@ const SeatSelection = () => {
                 <div className="row-seats">
                   {seats
                     .sort((a, b) => a.number - b.number)
-                    .map((seat) => (                      <button
+                    .map((seat) => (                       <button
                         key={`${seat.row}-${seat.number}`}
                         className={`seat ${getSeatStatus(seat)}`}
                         onClick={() => handleSeatSelection(seat)}
